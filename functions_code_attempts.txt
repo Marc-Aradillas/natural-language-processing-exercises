@@ -1,0 +1,178 @@
+# Initialize the URL of the first page
+url = 'https://codeup.edu/blog/'
+headers = {'User-Agent': 'Codeup Data Science'}
+next_page = url
+
+while next_page is not None:
+    # Send a request to the current page
+    response = requests.get(next_page, headers=headers)
+
+    if response.status_code != 200:
+        print("Failed to retrieve the page")
+        break
+
+    # Parse the HTML
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Scrape data from the current page
+    links = soup.find_all("h2")
+    new_links = []
+    for article in links:
+        if article.find("a"):
+            new_links.append(article.find("a").get("href"))
+
+    # Get the title of the page
+    title = soup.find("h1").get_text()
+
+    # Scrape content from the current page
+    content = soup.select(".entry-content")[0].find_all("p")
+    clean_content = []
+    for p in content:
+        clean_content.append(p.get_text())
+
+    # Find the link to the next page
+    next_link = soup.find("a", text="Next Entries »")
+
+    if next_link:
+        # Update the 'next_page' URL to follow the next link
+        next_page = next_link["href"]  # Extract the href attribute
+    else:
+        # If none, exit the loop
+        next_page = None
+
+
+
+
+
+def get_blog_articles(blogs_list=None):
+    # Define user-agent headers to mimic a web browser request
+    headers = {
+        'User-Agent': 'Codeup Data Science'
+    }
+
+    if blogs_list is None:
+        blog_page = requests.get('https://codeup.com/blog/', headers=headers)
+        blog_soup = BeautifulSoup(blog_page.content, 'html.parser')
+        links_list = [element["href"] for element in blog_soup.find_all('a', class_='more-link')]
+        blogs_list = links_list
+
+    blogs = []
+    for url in blogs_list:
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        soup_div = soup.find_all('div', class_='entry-content')
+        
+        if soup_div:
+            soups = BeautifulSoup(f'{soup_div[0]}', 'html.parser')
+            content = ''.join(element.text for element in soups.find_all('p'))
+            blog = {
+                'title': soup.title.text.strip(),  # Strip to remove leading/trailing whitespaces
+                'content': content.strip()  # Strip to remove leading/trailing whitespaces
+            }
+            blogs.append(blog)
+        else:
+            print(f"Could not find 'entry-content' div in {url}. Skipping this article.")
+    
+    return blogs
+
+
+
+# want to iterate through all pages,
+
+import requests
+from bs4 import BeautifulSoup
+
+def get_blog_articles(base_url='https://codeup.com/blog/', pages=5):
+    # Define user-agent headers to mimic a web browser request
+    headers = {
+        'User-Agent': 'Codeup Data Science'
+    }
+
+    blogs = []
+    
+    for page in range(1, pages + 1):
+        if page == 1:
+            url = base_url
+        else:
+            url = f'{base_url}page/{page}/'
+
+        blog_page = requests.get(url, headers=headers)
+        blog_soup = BeautifulSoup(blog_page.content, 'html.parser')
+        links_list = [element["href"] for element in blog_soup.find_all('a', class_='more-link')]
+
+        for blog_url in links_list:
+            response = requests.get(blog_url, headers=headers)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            soup_div = soup.find_all('div', class_='entry-content')
+            
+            if soup_div:
+                soups = BeautifulSoup(f'{soup_div[0]}', 'html.parser')
+                content = ''.join(element.text for element in soups.find_all('p'))
+                blog = {
+                    'title': soup.title.text.strip(),
+                    'content': content.strip()
+                }
+                blogs.append(blog)
+            else:
+                print(f"Could not find 'entry-content' div in {blog_url}. Skipping this article.")
+    
+    return blogs
+
+# Example usage: scrape blogs from the first 5 pages
+blog_articles = get_blog_articles(pages=5)
+
+
+
+
+
+def get_blog_articles(base_url='https://codeup.com/blog/'):
+    # Define user-agent headers to mimic a web browser request
+    headers = {
+        'User-Agent': 'Codeup Data Science'
+    }
+
+    blogs = []
+    page = 1
+    while True:
+        url = base_url if page == 1 else f'{base_url}page/{page}/'
+
+        blog_page = requests.get(url, headers=headers)
+        blog_soup = BeautifulSoup(blog_page.content, 'html.parser')
+        links_list = [element["href"] for element in blog_soup.find_all('a', href='Next Entries >>')]
+
+        if not links_list:
+            # If no more "more-link" is found, we've reached the last page
+            break
+
+        for blog_url in links_list:
+            response = requests.get(blog_url, headers=headers)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            soup_div = soup.find_all('div', class_='entry-content')
+            
+            if soup_div:
+                soups = BeautifulSoup(f'{soup_div[0]}', 'html.parser')
+                content = ''.join(element.text for element in soups.find_all('p'))
+                blog = {
+                    'title': soup.title.text.strip(),
+                    'content': content.strip()
+                }
+                blogs.append(blog)
+            else:
+                print(f"Could not find 'entry-content' div in {blog_url}. Skipping this article.")
+        
+        page += 1
+    
+    return blogs
+
+# Example usage: scrape blogs from all pages
+blog_articles = get_blog_articles()
+
+
+
+
+
+
+
+
+
+

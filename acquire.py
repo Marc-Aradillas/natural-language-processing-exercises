@@ -4,8 +4,12 @@ import re
 
 from bs4 import BeautifulSoup
 
-url = 'https://codeup.edu/blog/'
+# here we are defining a dictionary where a key is a user agent.
+# dsplays who i am and alllows request to follow through
+headers = {'User-Agent': 'Codeup Data Science'}
 
-response = requests.get(url)
+response = requests.get(url, headers=headers)
 
-response
+soup = BeautifulSoup(response.content, 'html.parser')
+
+links = soup.find_all("h2")
