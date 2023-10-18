@@ -13,14 +13,12 @@ import pandas as pd
 
 # defined function to accomplish basic clean actions on text data.
 def basic_clean(text_data):
-    
-    text_data = text_data.lower()
-    
+        
     text_data = unicodedata.normalize('NFKD', text_data)\
         .encode('ascii', 'ignore')\
         .decode('utf-8', 'ignore')
 
-    text_data = re.sub(r'[^a-z0-9\s]', '', text_data)
+    text_data = re.sub(r'[^a-z0-9\s]', '', text_data).lower()
 
     return text_data
 
@@ -91,7 +89,9 @@ def remove_stopwords(text_data, extra_words=None, exclude_words=None):
 # print(result)
 
 
-
+def clean(string, extra_stopwords):    
+    words = remove_stopwords((tokenize(basic_clean(string))), extra_stopwords)
+    return words
 
 
 # defined function to accomplish preparation of text data
